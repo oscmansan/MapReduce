@@ -58,13 +58,20 @@ ans = db.pair_counts.find()
 count = 0
 for pair in ans:
 	p = pair['_id'].split(',')
+	q = p[::-1]
 	v = float(pair['value'])
-	m = db.item_counts.find({'_id':p[0]})[0]['value']
 
+	m = db.item_counts.find({'_id':p[0]})[0]['value']
 	sup = v / n
 	conf = v / m
-
 	if (sup > s and conf > c):
 		count += 1
 		print str(p[0]) + '->' + str(p[1]) + ': sup=' + str(sup) + ' conf=' + str(conf)
+
+	m = db.item_counts.find({'_id':q[0]})[0]['value']
+	sup = v / n
+	conf = v / m
+	if (sup > s and conf > c):
+		count += 1
+		print str(q[0]) + '->' + str(q[1]) + ': sup=' + str(sup) + ' conf=' + str(conf)
 print 'count:', count
