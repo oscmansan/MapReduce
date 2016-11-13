@@ -1,0 +1,14 @@
+
+Row : 4  |  Support : 1 %  |  Confidence : 75 %  |  Nr. of association rules found : 0
+
+Row : 5  |  Support : 5 %  |  Confidence : 25 %  |  Nr. of association rules found : 4
+
+other vegetables -> whole milk       : sup = 0.0748347737672 , conf = 0.38675775092
+whole milk       -> other vegetables : sup = 0.0748347737672 , conf = 0.292877039395
+rolls/buns       -> whole milk       : sup = 0.0566344687341 , conf = 0.307904919845
+yogurt           -> whole milk       : sup = 0.0560244026436 , conf = 0.401603498542
+
+Row : 6  |  Support : 7 %  |  Confidence : 25 %  |  Nr. of association rules found : 2
+
+other vegetables -> whole milk       : sup = 0.0748347737672 , conf = 0.38675775092
+whole milk       -> other vegetables : sup = 0.0748347737672 , conf = 0.292877039395

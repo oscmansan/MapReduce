@@ -6,8 +6,8 @@ from bson.code import Code
 
 conn = MongoClient()
 db = conn.groceries
-
 db.transactions.drop()
+
 with open("groceries.csv") as f:
     for line in f:
         items = line.strip().split(',')
@@ -15,7 +15,7 @@ with open("groceries.csv") as f:
         d['content'] = items
         db.transactions.insert_one(d)
 
-
+# Mapper to count each product
 mapperItems = Code("""
 function() {
     for (var i = 0; i < this.content.length; i++) {
@@ -24,6 +24,7 @@ function() {
 }
                    """)
 
+# Mapper to count pairs of products
 mapperPairs = Code("""
 function() {
     for (var i = 0; i < this.content.length; i++) {
@@ -38,6 +39,8 @@ function() {
 }
                    """)
 
+# Reducer to count the acumulated values
+# Works for both Mappers
 reducer = Code("""
 function(key,values) {
     var total = 0;
@@ -46,32 +49,33 @@ function(key,values) {
     }
     return total;
 }
-               """)  
+               """) 
 
 db.transactions.map_reduce(mapperItems, reducer, "item_counts")
 db.transactions.map_reduce(mapperPairs, reducer, "pair_counts")
 
-s = 0.01
-c = 0.01
-n = db.transactions.count()
-ans = db.pair_counts.find()
+supMin = 0.07
+confMin = 0.25
+n_trans = db.transactions.count()
 count = 0
+# Association Rule between pair[0]	->	pair [1]
+def associationRule (pair , value):	
+	n_first= db.item_counts.find({'_id':pair[0]})[0]['value']
+	sup = value / n_trans
+	conf = value / n_first
+	if (sup > supMin and conf > confMin):
+		global count
+		count += 1
+		print str(pair[0]) + '->' + str(pair[1]) + ': sup=' + str(sup) + ' conf=' + str(conf)
+
+# For each pair of products, we calculate bidireccional association rules
+ans = db.pair_counts.find()
 for pair in ans:
 	p = pair['_id'].split(',')
 	q = p[::-1]
 	v = float(pair['value'])
+	associationRule(p, v)
+	associationRule(q, v)
 
-	m = db.item_counts.find({'_id':p[0]})[0]['value']
-	sup = v / n
-	conf = v / m
-	if (sup > s and conf > c):
-		count += 1
-		print str(p[0]) + '->' + str(p[1]) + ': sup=' + str(sup) + ' conf=' + str(conf)
-
-	m = db.item_counts.find({'_id':q[0]})[0]['value']
-	sup = v / n
-	conf = v / m
-	if (sup > s and conf > c):
-		count += 1
-		print str(q[0]) + '->' + str(q[1]) + ': sup=' + str(sup) + ' conf=' + str(conf)
 print 'count:', count
+
