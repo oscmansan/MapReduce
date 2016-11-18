@@ -54,28 +54,31 @@ function(key,values) {
 db.transactions.map_reduce(mapperItems, reducer, "item_counts")
 db.transactions.map_reduce(mapperPairs, reducer, "pair_counts")
 
-supMin = 0.07
-confMin = 0.25
+
+# Association Rule between pair[0] -> pair[1]
+def associationRule (pair , freq): 
+    n_first= db.item_counts.find({'_id':pair[0]})[0]['value']
+    sup = freq / n_trans
+    conf = freq / n_first
+    if (sup > supMin and conf > confMin):
+        global count
+        count += 1
+        pair_str = '{} -> {}'.format(pair[0],pair[1])
+        print '{:45} sup={:.3f}  conf={:.3f}'.format(pair_str,sup,conf)
+
+
+supMin = 0.01
+confMin = 0.01
 n_trans = db.transactions.count()
 count = 0
-# Association Rule between pair[0]	->	pair [1]
-def associationRule (pair , value):	
-	n_first= db.item_counts.find({'_id':pair[0]})[0]['value']
-	sup = value / n_trans
-	conf = value / n_first
-	if (sup > supMin and conf > confMin):
-		global count
-		count += 1
-		print str(pair[0]) + '->' + str(pair[1]) + ': sup=' + str(sup) + ' conf=' + str(conf)
 
 # For each pair of products, we calculate bidireccional association rules
 ans = db.pair_counts.find()
 for pair in ans:
 	p = pair['_id'].split(',')
 	q = p[::-1]
-	v = float(pair['value'])
-	associationRule(p, v)
-	associationRule(q, v)
+	f = float(pair['value'])
+	associationRule(p, f)
+	associationRule(q, f)
 
 print 'count:', count
-
